@@ -3,8 +3,8 @@ use nom::character::complete::{char, one_of};
 use nom::error::ErrorKind;
 use nom::multi::{count, many1};
 use nom::sequence::preceded;
-use nom::IResult;
 use nom::Err::Error;
+use nom::IResult;
 
 use std::iter::FromIterator;
 
@@ -67,10 +67,9 @@ pub fn type_ident(i: &str) -> IResult<&str, (String, Option<String>)> {
       let (input, _) = char('#')(input)?;
       Ok((input, (String::from("#"), None)))
     }
-    Err(e) => Err(e)
+    Err(e) => Err(e),
   }
 }
-
 
 /// Matches a TL lowercase identifier with namespace.
 /// First of the tuple represents identifier, and second is namespace if presented.
@@ -114,5 +113,24 @@ pub fn lc_ident_full(i: &str) -> IResult<&str, (String, Option<String>, Option<S
     }
     Err(Error((input, ErrorKind::Char))) => Ok((input, (ident, namespace, None))),
     Err(e) => Err(e),
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::lc_ident_full;
+  #[test]
+  fn can_parse_lc_ident_full() {
+    assert_eq!(
+      lc_ident_full("decryptedMessage#1f814f1f"),
+      Ok((
+        "",
+        (
+          String::from("decryptedMessage"),
+          None,
+          Some(String::from("1f814f1f"))
+        )
+      ))
+    )
   }
 }
