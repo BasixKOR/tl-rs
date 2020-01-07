@@ -9,27 +9,27 @@ use std::iter::FromIterator;
 
 // Character class
 /// Matches a lowercase letter.
-fn lc_letter(i: &str) -> IResult<&str, char> {
+pub fn lc_letter(i: &str) -> IResult<&str, char> {
   one_of("abcdefghijklmnopqrstuvwxyz")(i)
 }
 /// Matches a uppercase letter.
-fn uc_letter(i: &str) -> IResult<&str, char> {
+pub fn uc_letter(i: &str) -> IResult<&str, char> {
   one_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ")(i)
 }
 /// Matches a digit. 
-fn digit(i: &str) -> IResult<&str, char> {
+pub fn digit(i: &str) -> IResult<&str, char> {
   one_of("1234567890")(i)
 }
 /// Matches a letter that can be used in a hexdecimal.
-fn hex_digit(i: &str) -> IResult<&str, char> {
+pub fn hex_digit(i: &str) -> IResult<&str, char> {
   alt((digit, one_of("abcdef")))(i)
 }
 /// Matches a alphabet.
-fn letter(i: &str) -> IResult<&str, char> {
+pub fn letter(i: &str) -> IResult<&str, char> {
   alt((lc_letter, uc_letter))(i)
 }
 /// Matches a alphabet, or an underscore.
-fn ident_char(i: &str) -> IResult<&str, char> {
+pub fn ident_char(i: &str) -> IResult<&str, char> {
   alt((letter, digit, char('_')))(i)
 }
 
