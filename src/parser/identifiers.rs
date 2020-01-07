@@ -1,36 +1,40 @@
 use nom::branch::alt;
 use nom::character::complete::{char, one_of};
 use nom::error::ErrorKind;
-use nom::multi::{many1, count};
+use nom::multi::{count, many1};
 use nom::sequence::preceded;
+use nom::IResult;
 
 use std::iter::FromIterator;
 
 // Character class
+/// Matches a lowercase letter.
 fn lc_letter(i: &str) -> IResult<&str, char> {
   one_of("abcdefghijklmnopqrstuvwxyz")(i)
 }
+/// Matches a uppercase letter.
 fn uc_letter(i: &str) -> IResult<&str, char> {
   one_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ")(i)
 }
+/// Matches a digit. 
 fn digit(i: &str) -> IResult<&str, char> {
   one_of("1234567890")(i)
 }
+/// Matches a letter that can be used in a hexdecimal.
 fn hex_digit(i: &str) -> IResult<&str, char> {
   alt((digit, one_of("abcdef")))(i)
 }
-fn underscore(i: &str) -> IResult<&str, char> {
-  char('_')(i)
-}
+/// Matches a alphabet.
 fn letter(i: &str) -> IResult<&str, char> {
   alt((lc_letter, uc_letter))(i)
 }
+/// Matches a alphabet, or an underscore.
 fn ident_char(i: &str) -> IResult<&str, char> {
-  alt((letter, digit, underscore))(i)
+  alt((letter, digit, char('_')))(i)
 }
 
 // Simple identifiers and keywords
-use nom::IResult;
+/// Matches a TL lowercase identifier. It also represents namespace-ident.
 pub fn lc_ident(i: &str) -> IResult<&str, String> {
   let mut string = String::new();
   let (input, first) = lc_letter(i)?;
@@ -39,6 +43,7 @@ pub fn lc_ident(i: &str) -> IResult<&str, String> {
   string.push_str(String::from_iter(last).as_str());
   Ok((input, string))
 }
+/// Matches a TL uppercase identifier.
 pub fn uc_ident(i: &str) -> IResult<&str, String> {
   let mut string = String::new();
   let (input, first) = uc_letter(i)?;
@@ -47,7 +52,8 @@ pub fn uc_ident(i: &str) -> IResult<&str, String> {
   string.push_str(String::from_iter(last).as_str());
   Ok((input, string))
 }
-/// First of the tuple represents ident, and second is namespace if presented.
+/// Matches a TL lowercase identifier with namespace.
+/// First of the tuple represents identifier, and second is namespace if presented.
 pub fn lc_ident_ns(i: &str) -> IResult<&str, (String, Option<String>)> {
   let (input, first) = lc_ident(i)?;
   match preceded(char('.'), lc_ident)(input) {
@@ -56,15 +62,17 @@ pub fn lc_ident_ns(i: &str) -> IResult<&str, (String, Option<String>)> {
     Err(e) => Err(e),
   }
 }
+/// Matches a TL uppercase identifier with namespace.
 /// First of the tuple represents ident, and second is namespace if presented.
 pub fn uc_ident_ns(i: &str) -> IResult<&str, (String, Option<String>)> {
-  let (input, first) = lc_ident(i)?; // represents ident if 
+  let (input, first) = lc_ident(i)?;
   match preceded(char('.'), uc_ident)(input) {
     Ok((input, second)) => Ok((input, (second, Some(first)))),
     Err(nom::Err::Error((input, ErrorKind::Char))) => Ok((input, (first, None))),
     Err(e) => Err(e),
   }
 }
+/// Matches a TL's full identifier, which is used as tokens or parts of combinator identifiers.
 /// First of the tuple represents ident, and second is namespace if presented, and third is hexdigit if presented.
 pub fn lc_ident_full(i: &str) -> IResult<&str, (String, Option<String>, Option<String>)> {
   let (input, (ident, namespace)) = lc_ident_ns(i)?;
@@ -72,7 +80,7 @@ pub fn lc_ident_full(i: &str) -> IResult<&str, (String, Option<String>, Option<S
     Ok((input, hex_vec)) => {
       let hex = String::from_iter(hex_vec);
       Ok((input, (ident, namespace, Some(hex))))
-    },
+    }
     Err(nom::Err::Error((input, ErrorKind::Char))) => Ok((input, (ident, namespace, None))),
     Err(e) => Err(e),
   }
