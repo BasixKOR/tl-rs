@@ -1,10 +1,12 @@
-use nom::IResult;
+use nom::bytes::complete::tag;
 use nom::sequence::delimited;
-use nom::bytes::complete::{tag, take_until};
+use nom::IResult;
 
 pub fn single_line_comment(i: &str) -> IResult<&str, &str> {
-  delimited(tag("//"), take_until("\n"), tag("\n"))(i)
+  use nom::character::complete::{newline, not_line_ending};
+  delimited(tag("//"), not_line_ending, newline)(i)
 }
 pub fn multi_line_comment(i: &str) -> IResult<&str, &str> {
+  use nom::bytes::complete::take_until;
   delimited(tag("/*"), take_until("*/"), tag("*/"))(i)
 }
