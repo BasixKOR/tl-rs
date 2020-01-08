@@ -71,6 +71,32 @@ pub fn type_ident(i: &str) -> IResult<&str, (String, Option<String>)> {
   }
 }
 
+/// Matches a full combinator identifier.
+/// First of the tuple represents ident or underscore, and the second is namespace if presented, and the third is hexdigit if presented.
+pub fn full_combinator_ident(i: &str) -> IResult<&str, (String, Option<String>, Option<String>)> {
+  match lc_ident_full(i) {
+    Ok(result) => Ok(result),
+    Err(Error((input, ErrorKind::OneOf))) => {
+      let (input, _) = char('_')(input)?;
+      Ok((input, (String::from("_"), None, None)))
+    }
+    Err(e) => Err(e),
+  }
+}
+
+/// Matches a combinator identifier.
+/// First of the tuple represents ident or underscore, and the second is namespace if presented.
+pub fn combinator_ident(i: &str) -> IResult<&str, (String, Option<String>)> {
+  match lc_ident_ns(i) {
+    Ok(result) => Ok(result),
+    Err(Error((input, ErrorKind::OneOf))) => {
+      let (input, _) = char('_')(input)?;
+      Ok((input, (String::from("_"), None)))
+    }
+    Err(e) => Err(e),
+  }
+}
+
 /// Matches a TL lowercase identifier with namespace.
 /// First of the tuple represents identifier, and second is namespace if presented.
 pub fn lc_ident_ns(i: &str) -> IResult<&str, (String, Option<String>)> {
